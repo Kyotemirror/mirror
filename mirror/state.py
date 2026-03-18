@@ -1,51 +1,62 @@
 import pygame
 from datetime import datetime
 
+from weather import WeatherWidget
+
 
 class MirrorState:
     def __init__(self, config):
         self.config = config
 
         # ----------------------------------------------------
-        # Configuration
+        # Clock configuration
         # ----------------------------------------------------
         clock_cfg = config.get("clock", {})
         color_cfg = config.get("colors", {})
 
         # Time format
-        self.show_seconds = clock_cfg.get("show_seconds", False)
-        self.time_format = "%I:%M:%S %p" if self.show_seconds else "%I:%M %p"
+        show_seconds = clock_cfg.get("show_seconds", False)
+        self.time_format = "%I:%M:%S %p" if show_seconds else "%I:%M %p"
 
         # Font
-        font_size = clock_cfg.get("font_size", 64)
-        self.font = pygame.font.SysFont(None, font_size)
+        font_size = clock_cfg.get("font_size", 72)
+        self.clock_font = pygame.font.SysFont(None, font_size)
 
-        # Colors
-        self.text_color = color_cfg.get("text", (255, 255, 255))
-        self.bg_color = color_cfg.get("background", (0, 0, 0))
+        # Colors (JSON → tuple)
+        self.text_color = tuple(color_cfg.get("text", [255, 255, 255]))
+        self.bg_color = tuple(color_cfg.get("background", [0, 0, 0]))
 
-        # State
+        # Clock state
         self.time_text = ""
-        self.last_rendered_time = None
+        self.last_time_text = None
+
+        # ----------------------------------------------------
+        # Weather widget
+        # ----------------------------------------------------
+        self.weather = None
+        weather_cfg = config.get("weather", {})
+        if weather_cfg.get("enabled", False):
+            self.weather = WeatherWidget(config)
 
     # ----------------------------------------------------
-    # Optional event handling (touch / keys / GPIO later)
+    # Event handling (touch / keys later)
     # ----------------------------------------------------
     def handle_event(self, event):
-        # Placeholder for future interaction
+        # Placeholder for future input handling
         pass
 
     # ----------------------------------------------------
     # Update logic
     # ----------------------------------------------------
     def update(self):
-        now = datetime.now()
-        formatted = now.strftime(self.time_format).lstrip("0")
+        now_text = datetime.now().strftime(self.time_format).lstrip("0")
 
-        # Only update if the displayed time changed
-        if formatted != self.last_rendered_time:
-            self.time_text = formatted
-            self.last_rendered_time = formatted
+        if now_text != self.last_time_text:
+            self.time_text = now_text
+            self.last_time_text = now_text
+
+        if self.weather:
+            self.weather.update()
 
     # ----------------------------------------------------
     # Rendering
@@ -54,17 +65,4 @@ class MirrorState:
         # Clear background
         screen.fill(self.bg_color)
 
-        # Render time text
-        text_surface = self.font.render(
-            self.time_text,
-            True,
-            self.text_color
-        )
-
-        # Position: top-right with margin
-        margin = 12
-        rect = text_surface.get_rect(
-            topright=(screen.get_width() - margin, margin)
-        )
-
-        screen.blit(text_surface, rect)
+        # -----------------------
