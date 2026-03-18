@@ -13,7 +13,7 @@ class MirrorState:
 
     def update(self):
         # Update the clock once per frame
-        self.time_text = datetime.now().strftime("%I:%M %p").lstrip("0"
+        self.time_text = datetime.now().strftime("%I:%M %p").lstrip("0")
 
     def draw(self, screen):
         # Clear screen (black background)
