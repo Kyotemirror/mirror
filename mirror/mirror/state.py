@@ -1,5 +1,5 @@
 from datetime import datetime
-from mirror.weather import WeatherService
+from .weather import WeatherService
 
 class MirrorState:
     def __init__(self, config):

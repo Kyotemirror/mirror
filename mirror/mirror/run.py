@@ -21,7 +21,7 @@ def main():
 
     try:
         # Import here so argument parsing errors still work without package import issues
-        from mirror.app import MirrorApp
+        from .app import MirrorApp
     except Exception as e:
         print(f"ERROR: Unable to import MirrorApp: {e}", file=sys.stderr)
         return 2
