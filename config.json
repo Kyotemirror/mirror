@@ -1,17 +1,18 @@
 {
-  "screen": {
-    "width": 480,
-    "height": 320,
-    "fps": 30
-  },
-
   "clock": {
-    "format": "%I:%M %p",
-    "font_size": 50
+    "font_size": 72,
+    "show_seconds": false
   },
-
+  "weather": {
+    "enabled": true,
+    "api_key": "YOUR_OPENWEATHER_API_KEY",
+    "city": "Meridian,US",
+    "units": "imperial",
+    "font_size": 28,
+    "update_interval": 600
+  },
   "colors": {
-    "background": [0, 0, 0],
-    "text": [255, 255, 255]
+    "text": [255, 255, 255],
+    "background": [0, 0, 0]
   }
 }
