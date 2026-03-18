@@ -109,4 +109,3 @@ class MirrorApp:
 if __name__ == "__main__":
     app = MirrorApp()
     app.run()
-``
