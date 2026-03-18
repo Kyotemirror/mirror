@@ -22,7 +22,7 @@ class MirrorApp:
         pygame.font.init()
 
         # ✅ WINDOWED MODE (DEBUG SAFE)
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+       self.screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
         pygame.display.set_caption("Smart Mirror DEBUG")
 
         self.clock = pygame.time.Clock()
