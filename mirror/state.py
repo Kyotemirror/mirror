@@ -32,8 +32,7 @@ class MirrorState:
         # Widgets
         # -----------------
         self.weather = WeatherWidget(config)
-        self.news = NewsWidget(config)
-
+        
     def update(self):
         now = datetime.now()
 
@@ -41,7 +40,7 @@ class MirrorState:
         self.date_text = now.strftime("%A, %b %d")
 
         self.weather.update()
-        self.news.update()
+        
 
     def draw(self, screen):
         screen.fill(self.bg_color)
@@ -72,8 +71,4 @@ class MirrorState:
         # Weather (top-left)
         # -----------------
         self.weather.draw(screen)
-
-        # -----------------
-        # News (bottom-left)
-        # -----------------
-        self.news.draw(screen)
+        
