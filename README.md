@@ -1,7 +1,7 @@
 # Smart Mirror Dashboard
 
 <p align="center">
-  mirror/assets/logo.png
+  <img src="mirror/assets/logo.png" width="200">
 </p>
 
 A lightweight, Raspberry Pi–friendly **Smart Mirror dashboard** built with **Python and Pygame**.  
