@@ -36,44 +36,33 @@ class MirrorState:
         # -----------------
         # Logos
         # -----------------
-        self.logo_right = None
         self.logo_left = None
-        self.logo_right_rect = None
-        self.logo_left_rect = None
+        self.logo_right = None
 
         assets_dir = os.path.join(os.path.dirname(__file__), "assets")
-        right_logo_path = os.path.join(assets_dir, "logo.png")
         left_logo_path = os.path.join(assets_dir, "logo_left.png")
+        right_logo_path = os.path.join(assets_dir, "logo.png")
 
         def load_logo(path):
             logo = pygame.image.load(path).convert_alpha()
             max_width = 160
             scale = max_width / logo.get_width()
-            new_size = (
-                int(logo.get_width() * scale),
-                int(logo.get_height() * scale)
+            logo = pygame.transform.smoothscale(
+                logo,
+                (
+                    int(logo.get_width() * scale),
+                    int(logo.get_height() * scale)
+                )
             )
-            logo = pygame.transform.smoothscale(logo, new_size)
-            logo.set_alpha(180)  # visible but subtle
+            logo.set_alpha(180)
             return logo
 
         try:
-            # Right logo
+            if os.path.exists(left_logo_path):
+                self.logo_left = load_logo(left_logo_path)
+
             if os.path.exists(right_logo_path):
                 self.logo_right = load_logo(right_logo_path)
-                self.logo_right_rect = self.logo_right.get_rect()
-                self.logo_right_rect.bottomright = (460, 300)  # 480x320 screen
-
-            # Left logo (positioned correctly)
-            if os.path.exists(left_logo_path) and self.logo_right_rect:
-                self.logo_left = load_logo(left_logo_path)
-                self.logo_left_rect = self.logo_left.get_rect()
-
-                spacing = 10
-                self.logo_left_rect.bottomleft = (
-                    self.logo_right_rect.left - spacing,
-                    self.logo_right_rect.bottom
-                )
 
         except Exception as e:
             print("Logo load failed:", e)
@@ -89,13 +78,48 @@ class MirrorState:
         screen_rect = screen.get_rect()
 
         # -----------------
-        # Logos
+        # Logos (CENTERED AS A GROUP)
         # -----------------
-        if self.logo_left and self.logo_left_rect:
-            screen.blit(self.logo_left, self.logo_left_rect)
+        if self.logo_left and self.logo_right:
+            spacing = 10
 
-        if self.logo_right and self.logo_right_rect:
-            screen.blit(self.logo_right, self.logo_right_rect)
+            total_width = (
+                self.logo_left.get_width()
+                + spacing
+                + self.logo_right.get_width()
+            )
+            max_height = max(
+                self.logo_left.get_height(),
+                self.logo_right.get_height()
+            )
+
+            group_rect = pygame.Rect(
+                0, 0, total_width, max_height
+            )
+            group_rect.midbottom = (
+                screen_rect.centerx,
+                screen_rect.bottom - 10
+            )
+
+            left_rect = self.logo_left.get_rect()
+            left_rect.bottomleft = group_rect.bottomleft
+
+            right_rect = self.logo_right.get_rect()
+            right_rect.bottomleft = (
+                left_rect.right + spacing,
+                left_rect.bottom
+            )
+
+            screen.blit(self.logo_left, left_rect)
+            screen.blit(self.logo_right, right_rect)
+
+        elif self.logo_right:
+            rect = self.logo_right.get_rect()
+            rect.midbottom = (
+                screen_rect.centerx,
+                screen_rect.bottom - 10
+            )
+            screen.blit(self.logo_right, rect)
 
         # -----------------
         # Date
