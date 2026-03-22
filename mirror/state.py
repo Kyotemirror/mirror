@@ -34,36 +34,47 @@ class MirrorState:
         self.weather = WeatherWidget(config)
 
         # -----------------
-        # Logo (SAFE)
+        # Logos
         # -----------------
-        self.logo = None
-        self.logo_rect = None
+        self.logo_right = None
+        self.logo_left = None
+        self.logo_right_rect = None
+        self.logo_left_rect = None
 
-        logo_path = os.path.join(
-            os.path.dirname(__file__), "assets", "logo.png"
-        )
+        assets_dir = os.path.join(os.path.dirname(__file__), "assets")
+        right_logo_path = os.path.join(assets_dir, "logo.png")
+        left_logo_path = os.path.join(assets_dir, "logo_left.png")
 
-        if os.path.exists(logo_path):
-            try:
-                self.logo = pygame.image.load(logo_path).convert_alpha()
+        def load_logo(path):
+            logo = pygame.image.load(path).convert_alpha()
+            max_width = 160
+            scale = max_width / logo.get_width()
+            new_size = (
+                int(logo.get_width() * scale),
+                int(logo.get_height() * scale)
+            )
+            logo = pygame.transform.smoothscale(logo, new_size)
+            logo.set_alpha(90)
+            return logo
 
-                # Scale logo to fit nicely
-                max_width = 160
-                scale = max_width / self.logo.get_width()
-                new_size = (
-                    int(self.logo.get_width() * scale),
-                    int(self.logo.get_height() * scale)
+        try:
+            if os.path.exists(right_logo_path):
+                self.logo_right = load_logo(right_logo_path)
+                self.logo_right_rect = self.logo_right.get_rect()
+                self.logo_right_rect.bottomright = (460, 300)  # 480x320 screen
+
+            if os.path.exists(left_logo_path) and self.logo_right_rect:
+                self.logo_left = load_logo(left_logo_path)
+                self.logo_left_rect = self.logo_left.get_rect()
+
+                spacing = 10
+                self.logo_left_rect.bottomright = (
+                    self.logo_right_rect.left - spacing,
+                    self.logo_right_rect.bottom
                 )
-                self.logo = pygame.transform.smoothscale(self.logo, new_size)
 
-                # Optional: make subtle
-                self.logo.set_alpha(90)
-
-                self.logo_rect = self.logo.get_rect()
-                self.logo_rect.bottomright = (460, 300)  # for 480x320
-
-            except Exception as e:
-                print("Logo load failed:", e)
+        except Exception as e:
+            print("Logo load failed:", e)
 
     def update(self):
         now = datetime.now()
@@ -76,13 +87,13 @@ class MirrorState:
         screen_rect = screen.get_rect()
 
         # -----------------
-# Logos (background branding)
-# -----------------
-if self.logo_left and self.logo_left_rect:
-    screen.blit(self.logo_left, self.logo_left_rect)
+        # Logos
+        # -----------------
+        if self.logo_left and self.logo_left_rect:
+            screen.blit(self.logo_left, self.logo_left_rect)
 
-if self.logo_right and self.logo_right_rect:
-    screen.blit(self.logo_right, self.logo_right_rect)
+        if self.logo_right and self.logo_right_rect:
+            screen.blit(self.logo_right, self.logo_right_rect)
 
         # -----------------
         # Date
@@ -101,7 +112,9 @@ if self.logo_right and self.logo_right_rect:
         clock_surface = self.clock_font.render(
             self.time_text, True, self.text_color
         )
-        clock_rect = clock_surface.get_rect(center=screen_rect.center)
+        clock_rect = clock_surface.get_rect(
+            center=screen_rect.center
+        )
         screen.blit(clock_surface, clock_rect)
 
         # -----------------
