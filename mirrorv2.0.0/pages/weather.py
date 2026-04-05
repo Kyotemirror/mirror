@@ -1,130 +1,104 @@
-"""
-Weather page for Kyote Smart Mirror
-Provider: Open‑Meteo
-Includes: Current weather + 7‑day forecast
-Supports Metric (°C) and Imperial (°F)
-"""
-
 import json
-import os
 import time
-import urllib.request
+import requests
+import pygame
 from datetime import datetime
-from location import detect_location
-# -------------------------
-# Load config
-# -------------------------
-CONFIG_PATH = "/home/pi/mirror/config.json"
+
+from paths import path
+
+
+# =========================
+# Config + Cache
+# =========================
+CONFIG_PATH = path("config.json")
+CACHE_PATH = path("data", "cache", "weather.json")
 
 with open(CONFIG_PATH, "r") as f:
     CONFIG = json.load(f)
 
-WEATHER_CFG = CONFIG["weather"]
-CACHE_DIR = CONFIG["paths"]["cache"]
-CACHE_FILE = os.path.join(CACHE_DIR, "weather.json")
+WEATHER_CFG = CONFIG.get("weather", {})
 
-LAT = WEATHER_CFG["latitude"]
-LON = WEATHER_CFG["longitude"]
-UNITS = WEATHER_CFG.get("units", "metric")
-CACHE_SECONDS = WEATHER_CFG["cache_seconds"]
+LAT = WEATHER_CFG.get("latitude", 0)
+LON = WEATHER_CFG.get("longitude", 0)
+UNITS = WEATHER_CFG.get("units", "imperial")
+CACHE_SECONDS = WEATHER_CFG.get("cache_seconds", 900)
 
-# -------------------------
-# Helpers
-# -------------------------
-def c_to_f(c):
-    return round((c * 9 / 5) + 32)
+TEMP_UNIT = "°F" if UNITS == "imperial" else "°C"
+WIND_UNIT = "mph" if UNITS == "imperial" else "km/h"
 
-def fmt_temp(c):
-    if UNITS == "imperial":
-        return f"{c_to_f(c)}°F"
-    return f"{int(c)}°C"
 
-# -------------------------
-# Open‑Meteo endpoint
-# -------------------------
-API_URL = (
-    "https://api.open-meteo.com/v1/forecast"
-    f"?latitude={LAT}"
-    f"&longitude={LON}"
-    "&current_weather=true"
-    "&daily=temperature_2m_max,temperature_2m_min,weathercode"
-    "&forecast_days=7"
-    "&timezone=auto"
-)
-
-# -------------------------
-# Fetch + cache weather
-# -------------------------
+# =========================
+# Data Fetching
+# =========================
 def fetch_weather():
-    if os.path.exists(CACHE_FILE):
-        age = time.time() - os.path.getmtime(CACHE_FILE)
+    # Use cache if still valid
+    if CACHE_PATH.exists():
+        age = time.time() - CACHE_PATH.stat().st_mtime
         if age < CACHE_SECONDS:
-            with open(CACHE_FILE, "r") as f:
+            with open(CACHE_PATH, "r") as f:
                 return json.load(f)
 
-    try:
-        with urllib.request.urlopen(API_URL, timeout=3) as response:
-            data = json.loads(response.read())
-            os.makedirs(CACHE_DIR, exist_ok=True)
-            with open(CACHE_FILE, "w") as f:
-                json.dump(data, f)
-            return data
-    except Exception:
-        if os.path.exists(CACHE_FILE):
-            with open(CACHE_FILE, "r") as f:
-                return json.load(f)
-        return None
+    url = (
+        "https://api.open-meteo.com/v1/forecast"
+        f"?latitude={LAT}"
+        f"&longitude={LON}"
+        "&current_weather=true"
+        "&daily=temperature_2m_max,temperature_2m_min"
+        "&timezone=auto"
+        f"&temperature_unit={'fahrenheit' if UNITS == 'imperial' else 'celsius'}"
+        f"&windspeed_unit={'mph' if UNITS == 'imperial' else 'kmh'}"
+    )
 
-# -------------------------
-# Render page
-# -------------------------
+    r = requests.get(url, timeout=5)
+    r.raise_for_status()
+    data = r.json()
+
+    with open(CACHE_PATH, "w") as f:
+        json.dump(data, f)
+
+    return data
+
+
+# =========================
+# Rendering
+# =========================
 def render(screen, fonts):
     screen.fill((0, 0, 0))
 
-    screen.blit(
-        fonts["title"].render("Weather", True, (255, 255, 255)),
-        (60, 40),
-    )
-
-    data = fetch_weather()
-    if not data:
-        screen.blit(
-            fonts["body"].render("Weather unavailable", True, (180, 180, 180)),
-            (60, 120),
-        )
+    try:
+        data = fetch_weather()
+    except Exception:
+        text = fonts["body"].render("Weather unavailable", True, (180, 180, 180))
+        screen.blit(text, (60, 140))
         return
 
-    # -------------------------
-    # Current weather
-    # -------------------------
     current = data.get("current_weather", {})
+    daily = data.get("daily", {})
+
+    # --- Current ---
     temp = current.get("temperature")
     wind = current.get("windspeed")
 
-    screen.blit(
-        fonts["body"].render(f"Now: {fmt_temp(temp)}", True, (180, 180, 180)),
-        (60, 120),
-    )
-    screen.blit(
-        fonts["body"].render(f"Wind: {int(wind)} km/h", True, (180, 180, 180)),
-        (60, 155),
-    )
+    title = fonts["title"].render("Weather", True, (220, 220, 220))
+    screen.blit(title, (60, 40))
 
-    # -------------------------
-    # Weekly forecast
-    # -------------------------
-    daily = data.get("daily", {})
-    dates = daily.get("time", [])
-    t_max = daily.get("temperature_2m_max", [])
-    t_min = daily.get("temperature_2m_min", [])
+    if temp is not None:
+        temp_text = fonts["clock"].render(f"{int(temp)}{TEMP_UNIT}", True, (255, 255, 255))
+        screen.blit(temp_text, (60, 110))
 
-    y = 220
-    for i in range(min(7, len(dates))):
-        day = datetime.fromisoformat(dates[i]).strftime("%a")
-        line = f"{day}: {fmt_temp(t_min[i])} / {fmt_temp(t_max[i])}"
+    if wind is not None:
+        wind_text = fonts["body"].render(f"Wind: {int(wind)} {WIND_UNIT}", True, (180, 180, 180))
+        screen.blit(wind_text, (60, 220))
 
-        screen.blit(
-            fonts["body"].render(line, True, (160, 160, 160)),
-            (60, y),
-        )
-        y += 35
+    # --- Forecast ---
+    times = daily.get("time", [])
+    highs = daily.get("temperature_2m_max", [])
+    lows = daily.get("temperature_2m_min", [])
+
+    y = 300
+    for i in range(min(5, len(times))):
+        day = datetime.fromisoformat(times[i]).strftime("%a")
+        line = f"{day}: {int(highs[i])}{TEMP_UNIT} / {int(lows[i])}{TEMP_UNIT}"
+        text = fonts["body"].render(line, True, (180, 180, 180))
+        screen.blit(text, (60, y))
+        y += 40
