@@ -1,54 +1,4 @@
 {
-  "app": {
-    "name": "Kyote Smart Mirror",
-    "version": "1.0.0",
-    "entrypoint": "app.py",
-    "user": "pi",
-    "root": "/home/pi/mirror"
-  },
-
-  "hardware": {
-    "auto_detect": true,
-    "pi_zero": {
-      "fps": 30,
-      "font_scale": 0.85,
-      "full_resolution": false
-    },
-    "pi_modern": {
-      "fps": 45,
-      "font_scale": 1.0,
-      "full_resolution": true
-    }
-  },
-
-  "ui": {
-    "fullscreen": true,
-    "background_color": "#000000",
-    "text_color": "#FFFFFF",
-    "subtext_color": "#B4B4B4",
-    "font": {
-      "family": "sans",
-      "clock_size": 96,
-      "title_size": 48,
-      "body_size": 32
-    }
-  },
-
-  "pages": {
-    "order": [
-      "clock",
-      "weather",
-      "calendar",
-      "news"
-    ],
-    "durations": {
-      "clock": 120,
-      "weather": 120,
-      "calendar": 120,
-      "news": 120
-    }
-  },
-
   "weather": {
     "provider": "open-meteo",
     "latitude": 43.615,
@@ -57,76 +7,17 @@
     "cache_seconds": 900
   },
 
-  "calendar": {
-    "ics_path": "/home/pi/mirror/data/calendar.ics",
-    "max_events": 5,
-    "timezone": "auto"
-  },
-
-  "news": {
-    "provider": "rss",
-    "feeds": [
-      "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
-    ],
-    "max_headlines": 6,
-    "scroll_speed": {
-      "pi_zero": 12,
-      "pi_modern": 20
-    }
-  },
+"calendar": {
+  "ics_url": "https://p71-caldav.icloud.com/published/2/MjA1MTY1MDY1NTQyMDUxNrd3O4oO8P6ONLlDrdoYc18vQwCwjCjQWObX_3qJJQBZFUFh-p-glCeVOTN_9wLJSuRXPm-JfjOeCLXEYeJ5c1A",
+  "refresh_seconds": 900
+},
 
   "wifi": {
     "interface": "wlan0",
-    "require_on_boot": true,
-    "setup_timeout_seconds": 300,
-
     "access_point": {
-      "enabled": true,
       "ssid": "Kyote-Setup",
       "ip": "192.168.4.1",
-      "netmask": "255.255.255.0",
       "channel": 6
-    },
-
-    "qr": {
-      "enabled": true,
-      "url": "http://192.168.4.1",
-      "size": 6
     }
-  },
-
-  "systemd": {
-    "mirror_service": "kyote-mirror.service",
-    "wifi_ap_service": "kyote-wifi-ap.service",
-    "wifi_server_service": "kyote-wifi-server.service",
-    "restart_policy": "always"
-  },
-
-  "boot": {
-    "quiet": true,
-    "splash": {
-      "enabled": true,
-      "theme": "kyote",
-      "logo_path": "/home/pi/mirror/assets/boot/logo.png"
-    }
-  },
-
-  "paths": {
-    "pages": "/home/pi/mirror/pages",
-    "assets": "/home/pi/mirror/assets",
-    "data": "/home/pi/mirror/data",
-    "cache": "/home/pi/mirror/data/cache",
-    "fonts": "/home/pi/mirror/assets/fonts"
-  },
-
-  "logging": {
-    "level": "info",
-    "journal": true
-  },
-
-  "recovery": {
-    "enabled": true,
-    "trigger_key": "ESC",
-    "fallback_page": "wifi_setup"
   }
 }
