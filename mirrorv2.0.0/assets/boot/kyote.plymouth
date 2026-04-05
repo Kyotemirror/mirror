@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Kyote
+Description=Kyote Smart Mirror Boot
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/kyote
+ScriptFile=/usr/share/plymouth/themes/kyote/kyote.script

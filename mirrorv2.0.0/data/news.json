@@ -1,0 +1,21 @@
+{
+  "morning": [
+    "Markets open steady this morning",
+    "Weather expected to remain calm today",
+    "Top stories to start your day"
+  ],
+  "day": [
+    "Midday updates across global markets",
+    "Technology sector remains mixed",
+    "Local headlines continue to develop"
+  ],
+  "evening": [
+    "Markets close mixed after volatile session",
+    "Evening weather outlook remains stable",
+    "Top stories as the day wraps up"
+  ],
+  "night": [
+    "Minimal overnight updates",
+    "Systems running normally"
+  ]
+}
