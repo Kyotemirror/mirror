@@ -33,3 +33,28 @@ The project is built to be **path‑agnostic**, **PEP‑668 compliant**, and sta
 ---
 
 ## 📂 Project Layout
+mirrorv2.0.0/
+├── app.py                  # Main application
+├── paths.py                # Path resolver (NO hard‑coded paths)
+├── config.json              # Runtime configuration
+├── assets/
+│   ├── boot/               # Plymouth splash assets
+│   └── fonts/              # Bundled fonts
+├── data/
+│   └── cache/              # Cached API data
+├── pages/
+│   ├── clock.py
+│   ├── weather.py
+│   ├── calendar.py
+│   ├── news.py
+│   └── wifi_setup.py
+├── wifi/
+│   ├── wifi_ap.py
+│   ├── wifi_server.py
+│   └── wifi_setup.py
+├── system/
+│   └── wifi_services.py
+├── systemd_install.py
+├── boot_config.py
+├── install_kyote.sh        # One‑command installer
+└── venv/                   # Python virtual environment
